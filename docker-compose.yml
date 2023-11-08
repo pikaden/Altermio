@@ -1,33 +1,30 @@
-version: "3"
+version: "3.8"
 services:
-  react-app:
-    image: react-app
-    stdin_open: true
-    ports: 
-      - "3001:3001"
-    networks:
-      - mern-app
-  api-server:
-    image: api-server
-    environment:
-      - MONGODB_URL=mongodb://mongodb:27017/pikaden
+  mongodb:
+    image: "mongo"
+    volumes:
+      - data:/data/db
+  backend:
+    build: ./backend
     ports:
       - "3000:3000"
-    networks:
-      - mern-app
-    depends_on:
-      - mongo
-  mongo:
-    image: mongo:3.6.19-xenial
-    ports:
-      - "27017:27017"
-    networks:
-      - mern-app
     volumes:
-      - mongo-data:/data/db
-networks:
-  mern-app:
-    driver: bridge
+      - logs:/app/logs
+      - ./backend:/app
+      - /app/node_modules
+    depends_on:
+      - mongodb
+  frontend:
+    build: ./frontend
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./frontend/src:/app/src
+    stdin_open: true
+    tty: true
+    depends_on:
+      - backend
+
 volumes:
-  mongo-data:
-    driver: local
+  data:
+  logs:
